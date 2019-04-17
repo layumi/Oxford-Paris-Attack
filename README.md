@@ -4,22 +4,25 @@
 
 We provide the pretrained networks trained using the same parameters as in our TPAMI 2018 paper, with precomputed whitening. To evaluate them run:
 ```
-python3 -m cirtorch.examples.test --gpu-id '2' --network-path 'retrievalSfM120k-resnet101-gem' --datasets 'oxford5k,paris6k,roxford5k,rparis6k' --whitening 'retrieval-SfM-120k' --multiscale '[1, 1/2**(1/2), 1/2]'
+python3 -m cirtorch.examples.test --gpu-id '2' --network-path 'retrievalSfM120k-resnet101-gem' --datasets 'oxford5k,paris6k,roxford5k,rparis6k' --whitening 'retrieval-SfM-120k' --multiscale '[1]'
 ```
 
 The table below shows the performance comparison of networks trained with this framework and the networks used in the paper which were trained with our [CNN Image Retrieval in MatConvNet](https://github.com/filipradenovic/cnnimageretrieval):
 
 | Model | Oxford | Paris | ROxf (M) | RPar (M) | ROxf (H) | RPar (H) |
 |:------|:------:|:------:|:------:|:------:|:------:|:------:|
-| ResNet101-GeM (PyTorch) | 88.2 | 92.5 | 65.4 | 76.7 | 40.1 | 55.2 |
-
-
+| ResNet101-GeM (PyTorch) Multiple Scale | 88.2 | 92.5 | 65.4 | 76.7 | 40.1 | 55.2 |
+| ResNet101-GeM (PyTorch) Single Scale   | 86.24 |  90.66  | - | - | - | - |
 
 ### Testing Adversarial Query
 We add one function `cirtorch.network.extract_vectors_aq` and one py file `test_aq.py`.
 ```
-python3 -m cirtorch.examples.test_aq --gpu-id '2' --network-path 'retrievalSfM120k-resnet101-gem' --datasets 'oxford5k,paris6k' --whitening 'retrieval-SfM-120k' --multiscale '[1, 1/2**(1/2), 1/2]'
+python3 -m cirtorch.examples.test_aq --gpu-id '2' --network-path 'retrievalSfM120k-resnet101-gem' --datasets 'oxford5k,paris6k' --whitening 'retrieval-SfM-120k' --multiscale '[1]'
 ```
+
+| Model | Oxford | Paris | ROxf (M) | RPar (M) | ROxf (H) | RPar (H) |
+|:------|:------:|:------:|:------:|:------:|:------:|:------:|
+| ResNet101-GeM (PyTorch) | 0.75 | 2.86 | - | - | - | - |
 
 
 ## Related publications
