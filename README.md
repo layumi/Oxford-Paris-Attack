@@ -14,6 +14,14 @@ The table below shows the performance comparison of networks trained with this f
 | ResNet101-GeM (PyTorch) | 88.2 | 92.5 | 65.4 | 76.7 | 40.1 | 55.2 |
 
 
+
+### Testing Adversarial Query
+We add one function `cirtorch.network.extract_vectors_aq` and one py file `test_aq.py`.
+```
+python3 -m cirtorch.examples.test_aq --gpu-id '2' --network-path 'retrievalSfM120k-resnet101-gem' --datasets 'oxford5k,paris6k' --whitening 'retrieval-SfM-120k' --multiscale '[1, 1/2**(1/2), 1/2]'
+```
+
+
 ## Related publications
 
 ### Training (fine-tuning) convolutional neural networks 
