@@ -293,6 +293,35 @@ def extract_vectors(net, images, image_size, transform, bbxs=None, ms=[1], msp=1
 
     return vecs
 
+def extract_vectors_aq(net, images, image_size, transform, bbxs=None, ms=[1], msp=1, print_freq=10):
+    # moving network to gpu and eval mode
+    net.cuda()
+    net.eval()
+
+    # creating dataset loader
+    loader = torch.utils.data.DataLoader(
+        ImagesFromList(root='', images=images, imsize=image_size, bbxs=bbxs, transform=transform),
+        batch_size=1, shuffle=False, num_workers=8, pin_memory=True
+    )
+
+    # extracting vectors
+    with torch.no_grad():
+        vecs = torch.zeros(net.meta['outputdim'], len(images))
+        for i, input in enumerate(loader):
+            input = input.cuda()
+
+            if len(ms) == 1:
+                vecs[:, i] = extract_ss(net, input)
+            else:
+                vecs[:, i] = extract_ms(net, input, ms, msp)
+
+            if (i+1) % print_freq == 0 or (i+1) == len(images):
+                print('\r>>>> {}/{} done...'.format((i+1), len(images)), end='')
+        print('')
+
+    return vecs
+
+
 def extract_ss(net, input):
     return net(input).cpu().data.squeeze()
 
