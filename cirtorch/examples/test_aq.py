@@ -224,10 +224,10 @@ def main():
         bbxs = [tuple(cfg['gnd'][i]['bbx']) for i in range(cfg['nq'])]
         
         # extract database and query vectors
-        print('>> {}: database images...'.format(dataset))
-        vecs = extract_vectors(net, images, args.image_size, transform, ms=ms, msp=msp)
         print('>> {}: query images...'.format(dataset))
         qvecs = extract_vectors_aq(net, qimages, args.image_size, transform, bbxs=bbxs, ms=ms, msp=msp)
+        print('>> {}: database images...'.format(dataset))
+        vecs = extract_vectors(net, images, args.image_size, transform, ms=ms, msp=msp)
         
         print('>> {}: Evaluating...'.format(dataset))
 

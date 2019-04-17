@@ -4,6 +4,7 @@ import pdb
 import torch
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
+from torch.autograd import Variable
 
 import torchvision
 
@@ -305,10 +306,30 @@ def extract_vectors_aq(net, images, image_size, transform, bbxs=None, ms=[1], ms
     )
 
     # extracting vectors
-    with torch.no_grad():
-        vecs = torch.zeros(net.meta['outputdim'], len(images))
-        for i, input in enumerate(loader):
-            input = input.cuda()
+    vecs = torch.zeros(net.meta['outputdim'], len(images))
+    for i, input in enumerate(loader):
+            input = Variable(input.cuda(), requires_grad=True)
+            input_copy = Variable(input.data, requires_grad = False)
+            diff = torch.FloatTensor(input.shape).zero_()
+            diff = Variable(diff.cuda(), requires_grad = False)
+
+            vecs_tmp = net(input)
+            target = Variable(-vecs_tmp.data, requires_grad=False)
+            criterion = nn.MSELoss()
+            # The input has been whiten.
+            # So when we recover, we need to use a alpha
+            alpha = 1.0 / (0.226 * 255.0)
+            # generate adversarial query
+            rate = 2
+            for iter in range( round(min(1.25 * rate, rate+4))):
+                loss = criterion(vecs_tmp, target)
+                loss.backward()
+                diff += torch.sign(input.grad)
+                mask_diff = diff.abs() > rate
+                diff[mask_diff] = rate * torch.sign(diff[mask_diff])
+                input = input_copy - diff * 1.0 * alpha
+                input = Variable(input.data, requires_grad=True)
+                vecs_tmp = net(input)
 
             if len(ms) == 1:
                 vecs[:, i] = extract_ss(net, input)
@@ -317,24 +338,31 @@ def extract_vectors_aq(net, images, image_size, transform, bbxs=None, ms=[1], ms
 
             if (i+1) % print_freq == 0 or (i+1) == len(images):
                 print('\r>>>> {}/{} done...'.format((i+1), len(images)), end='')
-        print('')
+                print('')
 
     return vecs
 
 
-def extract_ss(net, input):
+def extract_ss(net, input, grad=False):
+    if grad:
+        return net(input).squeeze()
     return net(input).cpu().data.squeeze()
 
-def extract_ms(net, input, ms, msp):
-    
+def extract_ms(net, input, ms, msp, grad=False):
     v = torch.zeros(net.meta['outputdim'])
-    
+    if grad:
+        v = v.cuda()
+
     for s in ms: 
         if s == 1:
             input_t = input.clone()
         else:    
             input_t = nn.functional.interpolate(input, scale_factor=s, mode='bilinear', align_corners=False)
-        v += net(input_t).pow(msp).cpu().data.squeeze()
+       
+        if grad:
+            v += net(input_t).pow(msp).squeeze()
+        else:
+            v += net(input_t).pow(msp).cpu().data.squeeze()
         
     v /= len(ms)
     v = v.pow(1./msp)
