@@ -313,14 +313,15 @@ def extract_vectors_aq(net, images, image_size, transform, bbxs=None, ms=[1], ms
             diff = torch.FloatTensor(input.shape).zero_()
             diff = Variable(diff.cuda(), requires_grad = False)
 
-            vecs_tmp = net(input)
+            vecs_tmp = extract_ss(net, input, grad=True)
+
             target = Variable(-vecs_tmp.data, requires_grad=False)
             criterion = nn.MSELoss()
             # The input has been whiten.
             # So when we recover, we need to use a alpha
             alpha = 1.0 / (0.226 * 255.0)
             # generate adversarial query
-            rate = 2
+            rate = 16
             for iter in range( round(min(1.25 * rate, rate+4))):
                 loss = criterion(vecs_tmp, target)
                 loss.backward()
@@ -329,7 +330,7 @@ def extract_vectors_aq(net, images, image_size, transform, bbxs=None, ms=[1], ms
                 diff[mask_diff] = rate * torch.sign(diff[mask_diff])
                 input = input_copy - diff * 1.0 * alpha
                 input = Variable(input.data, requires_grad=True)
-                vecs_tmp = net(input)
+                vecs_tmp = extract_ss(net, input, grad=True)
 
             if len(ms) == 1:
                 vecs[:, i] = extract_ss(net, input)
