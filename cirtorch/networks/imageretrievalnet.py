@@ -338,12 +338,11 @@ def extract_vectors_aq(net, images, image_size, transform, bbxs=None, ms=[1], ms
                     vecs_tmp = extract_ss(net, input, grad=True)
                 else:
                     vecs_tmp = extract_ms(net, input, ms, msp, grad=True)
-     
+ 
             if len(ms) == 1:
                 vecs[:, i] = extract_ss(net, input)
             else:
                 vecs[:, i] = extract_ms(net, input, ms, msp)
-
 
             if (i+1) % print_freq == 0 or (i+1) == len(images):
                 print('\r>>>> {}/{} done...'.format((i+1), len(images)), end='')
@@ -358,7 +357,6 @@ def extract_ss(net, input, grad=False):
     return net(input).cpu().data.squeeze()
 
 def extract_ms(net, input, ms, msp, grad=False):
-    #v = torch.zeros(net.meta['outputdim']).cuda()
 
     for s in ms: 
         if s == 1:
@@ -373,7 +371,10 @@ def extract_ms(net, input, ms, msp, grad=False):
     v = v.pow(1./msp)
     v_norm = torch.norm(v, p=2, dim=0, keepdim=True) + 1e-6
     v = v/v_norm
-    #v /= v.norm()
+
+    if grad == False:
+        return v.cpu().data.squeeze()
+
     return v
 
 
