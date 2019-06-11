@@ -1,5 +1,7 @@
 # CNN Image Retrieval in PyTorch: Training and evaluating CNNs for Image Retrieval in PyTorch
 
+https://github.com/filipradenovic/cnnimageretrieval-pytorch
+
 ### Regular Testing
 
 We provide the pretrained networks trained using the same parameters as in our TPAMI 2018 paper, with precomputed whitening. To evaluate them run:
