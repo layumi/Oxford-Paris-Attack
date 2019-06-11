@@ -305,6 +305,7 @@ def extract_vectors_aq(net, images, image_size, transform, bbxs=None, ms=[1], ms
         batch_size=1, shuffle=False, num_workers=8, pin_memory=True
     )
 
+    torch.autograd.set_detect_anomaly(True)
     # extracting vectors
     vecs = torch.zeros(net.meta['outputdim'], len(images))
     for i, input in enumerate(loader):
@@ -313,12 +314,15 @@ def extract_vectors_aq(net, images, image_size, transform, bbxs=None, ms=[1], ms
             diff = torch.FloatTensor(input.shape).zero_()
             diff = Variable(diff.cuda(), requires_grad = False)
 
-            vecs_tmp = extract_ss(net, input, grad=True)
+            if len(ms) == 1:
+                vecs_tmp = extract_ss(net, input, grad=True)
+            else:
+                vecs_tmp = extract_ms(net, input, ms, msp, grad=True)
 
             target = Variable(-vecs_tmp.data, requires_grad=False)
             criterion = nn.MSELoss()
             # The input has been whiten.
-            # So when we recover, we need to use a alpha
+            #So when we recover, we need to use a alpha
             alpha = 1.0 / (0.226 * 255.0)
             # generate adversarial query
             rate = 16
@@ -330,12 +334,16 @@ def extract_vectors_aq(net, images, image_size, transform, bbxs=None, ms=[1], ms
                 diff[mask_diff] = rate * torch.sign(diff[mask_diff])
                 input = input_copy - diff * 1.0 * alpha
                 input = Variable(input.data, requires_grad=True)
-                vecs_tmp = extract_ss(net, input, grad=True)
-
+                if len(ms) == 1:
+                    vecs_tmp = extract_ss(net, input, grad=True)
+                else:
+                    vecs_tmp = extract_ms(net, input, ms, msp, grad=True)
+     
             if len(ms) == 1:
                 vecs[:, i] = extract_ss(net, input)
             else:
                 vecs[:, i] = extract_ms(net, input, ms, msp)
+
 
             if (i+1) % print_freq == 0 or (i+1) == len(images):
                 print('\r>>>> {}/{} done...'.format((i+1), len(images)), end='')
@@ -350,25 +358,22 @@ def extract_ss(net, input, grad=False):
     return net(input).cpu().data.squeeze()
 
 def extract_ms(net, input, ms, msp, grad=False):
-    v = torch.zeros(net.meta['outputdim'])
-    if grad:
-        v = v.cuda()
+    #v = torch.zeros(net.meta['outputdim']).cuda()
 
     for s in ms: 
         if s == 1:
-            input_t = input.clone()
+            input_t = input
         else:    
             input_t = nn.functional.interpolate(input, scale_factor=s, mode='bilinear', align_corners=False)
-       
-        if grad:
-            v += net(input_t).pow(msp).squeeze()
+        if s == ms[0]:
+            v = net(input_t).pow(msp).squeeze()
         else:
-            v += net(input_t).pow(msp).cpu().data.squeeze()
-        
+            v += net(input_t).pow(msp).squeeze()
     v /= len(ms)
     v = v.pow(1./msp)
-    v /= v.norm()
-
+    v_norm = torch.norm(v, p=2, dim=0, keepdim=True) + 1e-6
+    v = v/v_norm
+    #v /= v.norm()
     return v
 
 
