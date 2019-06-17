@@ -15,6 +15,7 @@ The table below shows the performance comparison of networks trained with this f
 |:------|:------:|:------:|:------:|:------:|:------:|:------:|
 | ResNet101-GeM (PyTorch) Multiple Scale | 88.2 | 92.5 | 65.4 | 76.7 | 40.1 | 55.2 |
 | ResNet101-GeM (PyTorch) Single Scale   | 86.24 |  90.66  | - | - | - | - |
+| VGG16-GeM (PyTorch) Single Scale   | 85.24 |  86.28  | - | - | - | - |
 
 ### Testing Adversarial Query
 We add one function `cirtorch.network.extract_vectors_aq` and one py file `test_aq.py`.
@@ -26,7 +27,7 @@ python3 -m cirtorch.examples.test_aq --gpu-id '2' --network-path 'retrievalSfM12
 |:------|:------:|:------:|:------:|:------:|:------:|:------:|
 | ResNet101-GeM (PyTorch) Multiple Scale | 2.24 (1.82) | 4.78 (3.64) | - | - | - | - |
 | ResNet101-GeM (PyTorch) Single Scale  | 0.75 | 2.86 | - | - | - | - |
-
+| VGG16-GeM (PyTorch) Single Scale   | 0.64 | 1.85 | - | - | - | - |
 
 ## Related publications
 
