@@ -2,7 +2,7 @@
 
 The code is based on the https://github.com/filipradenovic/cnnimageretrieval-pytorch .
 
-We added our attacking method ODFA (https://arxiv.org/abs/1809.02681). 
+We added our attacking method ODFA (https://arxiv.org/abs/1809.02681).  The performance drops from 88.2% to 2.24% on Oxford.
 
 ### Regular Testing
 
