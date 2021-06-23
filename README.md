@@ -1,6 +1,8 @@
 # CNN Image Retrieval in PyTorch: Training and evaluating CNNs for Image Retrieval in PyTorch
 
-https://github.com/filipradenovic/cnnimageretrieval-pytorch
+The code is based on the https://github.com/filipradenovic/cnnimageretrieval-pytorch .
+
+We added our attacking method ODFA (https://arxiv.org/abs/1809.02681). 
 
 ### Regular Testing
 
