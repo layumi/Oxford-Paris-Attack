@@ -4,6 +4,8 @@ The code is based on the https://github.com/filipradenovic/cnnimageretrieval-pyt
 
 We added our attacking method ODFA (https://arxiv.org/abs/1809.02681).  The performance drops from 88.2% to 2.24% on Oxford.
 
+The results attacking other datasets can be found at our main repo https://github.com/layumi/A_reID .
+
 ### Regular Testing
 
 We provide the pretrained networks trained using the same parameters as in our TPAMI 2018 paper, with precomputed whitening. To evaluate them run:
