@@ -115,7 +115,7 @@ def compute_map_and_print(dataset, ranks, gnd, kappas=[1,10]):
     
     # old evaluation protocol
     if dataset.startswith('oxford5k') or dataset.startswith('paris6k'):
-        map, aps, pr, _ = compute_map(ranks, gnd, [1])
+        map, aps, pr, _ = compute_map(ranks, gnd, [1,10])
         print('>> {}: mAP {:.2f}, Rank@1 {:.2f}, Rank@10 {:.2f}'.format(dataset, np.around(map*100, decimals=2), np.around(pr[0]*100, decimals=2), np.around(pr[1]*100, decimals=2) ))
 
     # new evaluation protocol

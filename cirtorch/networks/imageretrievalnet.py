@@ -378,6 +378,59 @@ def extract_ms(net, input, ms, msp, grad=False):
     return v
 
 
+def extract_vectors_pire(net, images, image_size, transform, bbxs=None, ms=[1], msp=1, print_freq=10, iteration=20):
+    # moving network to gpu and eval mode
+    net.cuda()
+    net.eval()
+
+    # creating dataset loader
+    loader = torch.utils.data.DataLoader(
+        ImagesFromList(root='', images=images, imsize=image_size, bbxs=bbxs, transform=transform),
+        batch_size=1, shuffle=False, num_workers=8, pin_memory=True
+    )
+
+    torch.autograd.set_detect_anomaly(True)
+    # extracting vectors
+    vecs = torch.zeros(net.meta['outputdim'], len(images))
+    for i, input in enumerate(loader):
+            input = Variable(input.cuda(), requires_grad=True)
+            input_copy = Variable(input.data, requires_grad = False)
+
+            criterion = nn.MSELoss()
+            # The input has been whiten.
+            #So when we recover, we need to use a alpha
+            alpha = 1.0 / (0.226 * 255.0)
+            # generate adversarial query
+            rate = 16
+            init_v = (torch.rand(input.shape)-0.5)*2*rate  # -16 to 16
+            gem_out = extract_ss(net, input, grad=False)
+            gem_out = Variable(gem_out.data, requires_grad=False).cuda()
+            diff = torch.autograd.Variable(init_v.cuda(),requires_grad=True)
+            loss_fn = torch.nn.MSELoss(reduction='sum')
+            learning_rate = 0.1 #Here we use one large lr Rate for quick converge
+            optimizer = torch.optim.Adam([diff], lr=learning_rate)
+            for iter in range(iteration):
+                y_pred = extract_ss(net, input + diff * 1.0  * alpha, grad=True)
+                           
+                loss =  -1 * loss_fn(y_pred, gem_out)
+                optimizer.zero_grad()
+                diff.data = torch.clamp(diff.data,-rate, rate)
+                loss.backward(retain_graph=True)
+                optimizer.step()
+
+            input = input_copy + diff * 1.0 * alpha
+            input = Variable(input.data, requires_grad=False)
+            if len(ms) == 1:
+                vecs[:, i] = extract_ss(net, input)
+            else:
+                vecs[:, i] = extract_ms(net, input, ms, msp)
+
+            if (i+1) % print_freq == 0 or (i+1) == len(images):
+                print('\r>>>> {}/{} done...'.format((i+1), len(images)), end='')
+                print('')
+
+    return vecs
+
 def extract_regional_vectors(net, images, image_size, transform, bbxs=None, ms=[1], msp=1, print_freq=10):
     # moving network to gpu and eval mode
     net.cuda()
