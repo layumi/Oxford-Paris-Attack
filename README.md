@@ -29,16 +29,23 @@ single-scale
 python3 -m cirtorch.examples.test_aq --gpu-id '2' --network-path 'retrievalSfM120k-resnet101-gem' --datasets 'oxford5k,paris6k' --whitening 'retrieval-SfM-120k' --multiscale '[1]'
 ```
 
-PIRE / TMA with Adam Optimizer
-```
-python3 -m cirtorch.examples.test_pire --gpu-id '2' --network-path 'retrievalSfM120k-resnet101-gem' --datasets 'oxford5k,paris6k' --whitening 'retrieval-SfM-120k' --multiscale '[1]' --iter 20
-```
-
 multi-scale
 ```
 python3 -m cirtorch.examples.test_aq --gpu-id '2' --network-path 'retrievalSfM120k-resnet101-gem' --datasets 'oxford5k,paris6k' --whitening 'retrieval-SfM-120k' --multiscale '[1, 1/2**(1/2), 1/2]'
 ```
 
+PIRE / TMA with Adam Optimizer 100 iteration
+```
+python3 -m cirtorch.examples.test_pire --gpu-id '2' --network-path 'retrievalSfM120k-resnet101-gem' --datasets 'oxford5k,paris6k' --whitening 'retrieval-SfM-120k' --multiscale '[1]' --iter 100
+```
+
+PIRE / TMA with Adam Optimizer 100 iteration (MS)
+```
+python3 -m cirtorch.examples.test_pire --gpu-id '0' --network-path 'retrievalSfM120k-resnet101-gem' --datasets 'oxford5k,paris6k' --whitening 'retrieval-SfM-120k' --multiscale '[1, 1/2**(1/2), 1/2]' --iter 100
+```
+
+
+You will obtain result around:
 | Model | Oxford | Paris | ROxf (M) | RPar (M) | ROxf (H) | RPar (H) |
 |:------|:------:|:------:|:------:|:------:|:------:|:------:|
 | ResNet101-GeM (PyTorch) Multiple Scale | 2.24 (1.82) | 4.78 (3.64) | - | - | - | - |
