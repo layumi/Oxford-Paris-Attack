@@ -52,6 +52,10 @@ parser.add_argument('--whitening', '-w', metavar='WHITENING', default=None, choi
                         " | ".join(whitening_names) + 
                         " (default: None)")
 
+# pire
+parser.add_argument('--tma', action='store_true', help='tma with normalization' )
+
+
 # GPU ID
 parser.add_argument('--gpu-id', '-g', default='0', metavar='N',
                     help="gpu id used for testing (default: '0')")

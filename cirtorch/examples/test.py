@@ -66,8 +66,8 @@ def main():
 
     # check if test dataset are downloaded
     # and download if they are not
-    download_train(get_data_root())
-    download_test(get_data_root())
+    #download_train(get_data_root())
+    #download_test(get_data_root())
 
     # setting up the visible GPU
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
@@ -237,6 +237,7 @@ def main():
 
         # search, rank, and print
         scores = np.dot(vecs.T, qvecs)
+        print(scores)
         ranks = np.argsort(-scores, axis=0)
         compute_map_and_print(dataset, ranks, cfg['gnd'])
     

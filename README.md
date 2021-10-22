@@ -23,14 +23,21 @@ The table below shows the performance comparison of networks trained with this f
 
 ### Testing Adversarial Query
 We add one function `cirtorch.network.extract_vectors_aq` and one py file `test_aq.py`.
+
+single-scale
 ```
 python3 -m cirtorch.examples.test_aq --gpu-id '2' --network-path 'retrievalSfM120k-resnet101-gem' --datasets 'oxford5k,paris6k' --whitening 'retrieval-SfM-120k' --multiscale '[1]'
+```
+
+multi-scale
+```
+python3 -m cirtorch.examples.test_aq --gpu-id '2' --network-path 'retrievalSfM120k-resnet101-gem' --datasets 'oxford5k,paris6k' --whitening 'retrieval-SfM-120k' --multiscale '[1, 1/2**(1/2), 1/2]'
 ```
 
 | Model | Oxford | Paris | ROxf (M) | RPar (M) | ROxf (H) | RPar (H) |
 |:------|:------:|:------:|:------:|:------:|:------:|:------:|
 | ResNet101-GeM (PyTorch) Multiple Scale | 2.24 (1.82) | 4.78 (3.64) | - | - | - | - |
-| ResNet101-GeM (PyTorch) Single Scale  | 0.75 | 2.86 | - | - | - | - |
+| ResNet101-GeM (PyTorch) Single Scale  | 0.80 | 3.00 | - | - | - | - |
 | VGG16-GeM (PyTorch) Single Scale   | 0.64 | 1.85 | - | - | - | - |
 
 ## Related publications
