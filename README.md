@@ -29,6 +29,11 @@ single-scale
 python3 -m cirtorch.examples.test_aq --gpu-id '2' --network-path 'retrievalSfM120k-resnet101-gem' --datasets 'oxford5k,paris6k' --whitening 'retrieval-SfM-120k' --multiscale '[1]'
 ```
 
+PIRE / TMA with Adam Optimizer
+```
+python3 -m cirtorch.examples.test_pire --gpu-id '2' --network-path 'retrievalSfM120k-resnet101-gem' --datasets 'oxford5k,paris6k' --whitening 'retrieval-SfM-120k' --multiscale '[1]' --iter 20
+```
+
 multi-scale
 ```
 python3 -m cirtorch.examples.test_aq --gpu-id '2' --network-path 'retrievalSfM120k-resnet101-gem' --datasets 'oxford5k,paris6k' --whitening 'retrieval-SfM-120k' --multiscale '[1, 1/2**(1/2), 1/2]'
