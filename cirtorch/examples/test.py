@@ -10,7 +10,7 @@ import torch
 from torch.utils.model_zoo import load_url
 from torch.autograd import Variable
 from torchvision import transforms
-
+import scipy.io
 from cirtorch.networks.imageretrievalnet import init_network, extract_vectors
 from cirtorch.datasets.datahelpers import cid2filename
 from cirtorch.datasets.testdataset import configdataset

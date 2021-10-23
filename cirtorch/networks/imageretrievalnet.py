@@ -325,7 +325,8 @@ def extract_vectors_aq(net, images, image_size, transform, bbxs=None, ms=[1], ms
             #So when we recover, we need to use a alpha
             alpha = 1.0 / (0.226 * 255.0)
             # generate adversarial query
-            rate = 16
+            rate = 16 
+            #rate = 10 ablation 
             for iter in range( round(min(1.25 * rate, rate+4))):
                 loss = criterion(vecs_tmp, target)
                 loss.backward()

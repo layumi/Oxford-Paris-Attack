@@ -10,7 +10,7 @@ import torch
 from torch.utils.model_zoo import load_url
 from torch.autograd import Variable
 from torchvision import transforms
-
+import scipy.io
 from cirtorch.networks.imageretrievalnet import init_network, extract_vectors, extract_vectors_pire
 from cirtorch.datasets.datahelpers import cid2filename
 from cirtorch.datasets.testdataset import configdataset
@@ -229,15 +229,23 @@ def main():
         bbxs = [tuple(cfg['gnd'][i]['bbx']) for i in range(cfg['nq'])]
         
         # extract database and query vectors
+        print('>> {}: database images...'.format(dataset))
+        if os.path.exists('gallery_%s_%s.mat'%(dataset,ms) ):
+            result_g = scipy.io.loadmat('gallery_%s_%s.mat'%(dataset,ms))
+            vecs = result_g['vecs']
+            print(vecs.shape)
+        else:
+            vecs = extract_vectors(net, images, args.image_size, transform, ms=ms, msp=msp)
+            vecs = vecs.numpy()
+            result_g = {'vecs': vecs}
+            scipy.io.savemat('gallery_%s_%s.mat'%(dataset,ms), result_g)
+
         print('>> {}: query images...'.format(dataset))
         qvecs = extract_vectors_pire(net, qimages, args.image_size, transform, bbxs=bbxs, ms=ms, msp=msp, iteration = args.iter)
-        print('>> {}: database images...'.format(dataset))
-        vecs = extract_vectors(net, images, args.image_size, transform, ms=ms, msp=msp)
         
         print('>> {}: Evaluating...'.format(dataset))
 
         # convert to numpy
-        vecs = vecs.numpy()
         qvecs = qvecs.numpy()
 
         # search, rank, and print

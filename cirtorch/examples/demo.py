@@ -237,6 +237,7 @@ def main():
 
         print('>> {}: query images...'.format(dataset))
         qvecs = extract_vectors_aq(net, qimages, args.image_size, transform, bbxs=bbxs, ms=ms, msp=msp)
+
         
         print('>> {}: Evaluating...'.format(dataset))
 
