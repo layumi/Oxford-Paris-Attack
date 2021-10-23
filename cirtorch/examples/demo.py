@@ -11,7 +11,7 @@ from torch.utils.model_zoo import load_url
 from torch.autograd import Variable
 from torchvision import transforms
 import scipy.io
-from cirtorch.networks.imageretrievalnet import init_network, extract_vectors, extract_vectors_aq
+from cirtorch.networks.imageretrievalnet import init_network, extract_vectors, extract_vectors_aq, extract_vectors_pire
 from cirtorch.datasets.datahelpers import cid2filename
 from cirtorch.datasets.testdataset import configdataset
 from cirtorch.utils.download import download_train, download_test
@@ -51,6 +51,9 @@ parser.add_argument('--whitening', '-w', metavar='WHITENING', default=None, choi
                     help="dataset used to learn whitening for testing: " + 
                         " | ".join(whitening_names) + 
                         " (default: None)")
+
+parser.add_argument('--query_index', default=7, type=int, help='test_image_index')
+parser.add_argument('--adv', default=0, type=int, help='0: origin; 1: ODFA; 2:pire')
 
 # GPU ID
 parser.add_argument('--gpu-id', '-g', default='0', metavar='N',
@@ -222,7 +225,7 @@ def main():
         images = [cfg['im_fname'](cfg,i) for i in range(cfg['n'])]
         qimages = [cfg['qim_fname'](cfg,i) for i in range(cfg['nq'])]
         bbxs = [tuple(cfg['gnd'][i]['bbx']) for i in range(cfg['nq'])]
-        
+
         # extract database and query vectors
         print('>> {}: database images...'.format(dataset))
         if os.path.exists('gallery_%s_%s.mat'%(dataset,ms) ):
@@ -236,8 +239,12 @@ def main():
             scipy.io.savemat('gallery_%s_%s.mat'%(dataset,ms), result_g)
 
         print('>> {}: query images...'.format(dataset))
-        qvecs = extract_vectors_aq(net, qimages, args.image_size, transform, bbxs=bbxs, ms=ms, msp=msp)
-
+        if args.adv==1:
+            qvecs = extract_vectors_aq(net, qimages, args.image_size, transform, bbxs=bbxs, ms=ms, msp=msp)
+        elif args.adv==2:
+            qvecs = extract_vectors_pire(net, qimages, args.image_size, transform, bbxs=bbxs, ms=ms, msp=msp, iteration = 20)
+        else:
+            qvecs = extract_vectors(net, qimages, args.image_size, transform, bbxs=bbxs, ms=ms, msp=msp)
         
         print('>> {}: Evaluating...'.format(dataset))
 
@@ -247,6 +254,22 @@ def main():
         # search, rank, and print
         scores = np.dot(vecs.T, qvecs)
         ranks = np.argsort(-scores, axis=0)
+        print(ranks.shape)
+        ranklist = ranks[:,args.query_index]
+        if args.adv==1:
+            print('attacked query: '+qimages[args.query_index].replace('test', 'attack'))
+        elif args.adv==2:
+            print('attacked query: '+qimages[args.query_index].replace('test', 'attack+pire'))
+
+        else:
+            print('query: '+qimages[args.query_index])
+
+        if not os.path.isdir('%d+%d'%(args.query_index, args.adv)):
+            os.mkdir('%d+%d'%(args.query_index, args.adv))
+        os.system('cp %s %d+%d/%s_query.jpg'%(qimages[args.query_index], args.query_index, args.adv, dataset))
+        for top10 in range(10):
+            print(images[ranklist[top10]])
+            os.system('cp %s %d+%d/%s_%d.jpg'%(images[ranklist[top10]], args.query_index, args.adv, dataset, top10))
         compute_map_and_print(dataset, ranks, cfg['gnd'])
     
         if Lw is not None:

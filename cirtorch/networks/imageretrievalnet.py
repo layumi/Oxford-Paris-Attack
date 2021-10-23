@@ -13,6 +13,8 @@ from cirtorch.layers.normalization import L2N, PowerLaw
 from cirtorch.datasets.genericdataset import ImagesFromList
 from cirtorch.utils.general import get_data_root
 
+from PIL import Image
+import numpy as np
 # for some models, we have imported features (convolutions) from caffe because the image retrieval performance is higher for them
 FEATURES = {
     'vgg16'         : 'http://cmp.felk.cvut.cz/cnnimageretrieval/data/networks/imagenet/imagenet-caffe-vgg16-features-d369c8e.pth',
@@ -274,7 +276,7 @@ def extract_vectors(net, images, image_size, transform, bbxs=None, ms=[1], msp=1
     # creating dataset loader
     loader = torch.utils.data.DataLoader(
         ImagesFromList(root='', images=images, imsize=image_size, bbxs=bbxs, transform=transform),
-        batch_size=1, shuffle=False, num_workers=8, pin_memory=True
+        batch_size=1, shuffle=False, num_workers=0, pin_memory=True
     )
 
     # extracting vectors
@@ -294,6 +296,17 @@ def extract_vectors(net, images, image_size, transform, bbxs=None, ms=[1], msp=1
 
     return vecs
 
+def recover(inp):
+    """Imshow for Tensor."""
+    inp = inp.numpy().transpose((1, 2, 0))
+    mean = np.array([0.485, 0.456, 0.406])
+    std = np.array([0.229, 0.224, 0.225])
+    inp = std * inp + mean
+    inp = inp * 255.0
+    inp = np.clip(inp, 0, 255)
+    return inp
+
+
 def extract_vectors_aq(net, images, image_size, transform, bbxs=None, ms=[1], msp=1, print_freq=10):
     # moving network to gpu and eval mode
     net.cuda()
@@ -302,7 +315,7 @@ def extract_vectors_aq(net, images, image_size, transform, bbxs=None, ms=[1], ms
     # creating dataset loader
     loader = torch.utils.data.DataLoader(
         ImagesFromList(root='', images=images, imsize=image_size, bbxs=bbxs, transform=transform),
-        batch_size=1, shuffle=False, num_workers=8, pin_memory=True
+        batch_size=1, shuffle=False, num_workers=0, pin_memory=True
     )
 
     torch.autograd.set_detect_anomaly(True)
@@ -339,7 +352,7 @@ def extract_vectors_aq(net, images, image_size, transform, bbxs=None, ms=[1], ms
                     vecs_tmp = extract_ss(net, input, grad=True)
                 else:
                     vecs_tmp = extract_ms(net, input, ms, msp, grad=True)
- 
+
             if len(ms) == 1:
                 vecs[:, i] = extract_ss(net, input)
             else:
@@ -349,6 +362,19 @@ def extract_vectors_aq(net, images, image_size, transform, bbxs=None, ms=[1], ms
                 print('\r>>>> {}/{} done...'.format((i+1), len(images)), end='')
                 print('')
 
+            attack = input.cpu().detach()
+            for j in range(input.shape[0]):
+                im = recover(attack[j,:,:,:])
+                im = Image.fromarray(im.astype('uint8'))
+                save_path = images[j].replace('test', 'attack')
+                if not os.path.isdir( os.path.dirname(os.path.dirname(os.path.dirname(save_path)))):
+                    os.mkdir(os.path.dirname(os.path.dirname(os.path.dirname(save_path))))
+                if not os.path.isdir( os.path.dirname(os.path.dirname(save_path))):
+                    os.mkdir(os.path.dirname(os.path.dirname(save_path)))
+                if not os.path.isdir( os.path.dirname(save_path)):
+                    os.mkdir(os.path.dirname(save_path))
+                im.save( save_path )
+            
     return vecs
 
 
@@ -425,6 +451,19 @@ def extract_vectors_pire(net, images, image_size, transform, bbxs=None, ms=[1], 
                 vecs[:, i] = extract_ss(net, input)
             else:
                 vecs[:, i] = extract_ms(net, input, ms, msp)
+
+            attack = input.cpu().detach()
+            for j in range(input.shape[0]):
+                im = recover(attack[j,:,:,:])
+                im = Image.fromarray(im.astype('uint8'))
+                save_path = images[j].replace('test', 'attack+pire')
+                if not os.path.isdir( os.path.dirname(os.path.dirname(os.path.dirname(save_path)))):
+                    os.mkdir(os.path.dirname(os.path.dirname(os.path.dirname(save_path))))
+                if not os.path.isdir( os.path.dirname(os.path.dirname(save_path))):
+                    os.mkdir(os.path.dirname(os.path.dirname(save_path)))
+                if not os.path.isdir( os.path.dirname(save_path)):
+                    os.mkdir(os.path.dirname(save_path))
+                im.save( save_path )
 
             if (i+1) % print_freq == 0 or (i+1) == len(images):
                 print('\r>>>> {}/{} done...'.format((i+1), len(images)), end='')
