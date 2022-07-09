@@ -4,7 +4,7 @@ The code is based on the https://github.com/filipradenovic/cnnimageretrieval-pyt
 
 We added our attacking method ODFA (https://arxiv.org/abs/1809.02681).  The performance drops from 88.2% to 2.24% on Oxford.
 
-The results attacking other datasets can be found at our main repo https://github.com/layumi/A_reID .
+The results attacking other datasets can be found at our main repo https://github.com/layumi/U_turn.
 
 ### Regular Testing
 
